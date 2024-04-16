@@ -34,11 +34,9 @@ https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf
 
 # create network
-
 docker network create pg-network
 
 # Run Postgres with network
-
 docker run -it \
 	-e POSTGRES_USER="root" \
   -e POSTGRES_PASSWORD="root" \
@@ -61,11 +59,29 @@ docker run -it \
 # how to pull pgadmin image
 docker pull dpage/pgadmin4:<tag name>
 
+URL="https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet"
 
+# run data pipeline script
 python ingest_data.py \
     --user=root \
     --password=root \
     --host=localhost \
     --port=5432 \
     --db=ny_taxi \
-    --table_name=yellow_taxi_trips
+    --tb=yellow_taxi_trips \
+		--url=${URL}
+
+# build docker image from dockerfile
+docker build -t taxi_ingest:v001 .
+
+# run docker container
+docker run -it \
+		--network=pg-network \
+		taxi_ingest:v001 \
+    --user=root \
+    --password=root \
+    --host=pg-database \
+    --port=5432 \
+    --db=ny_taxi \
+    --tb=yellow_taxi_trips \
+		--url=${URL}
