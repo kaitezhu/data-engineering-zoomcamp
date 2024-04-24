@@ -85,3 +85,17 @@ docker run -it \
     --db=ny_taxi \
     --tb=yellow_taxi_trips \
 		--url=${URL}
+
+select
+	tpep_pickup_datetime,
+	tpep_dropoff_datetime,
+	total_amount,
+	concat(zpu."Borough", ' / ', zpu.'Zone') as 'pick_up_loc',
+	concat(zdo."Borough", ' / ', zdo.'Zone') as 'drop_off_loc'
+from yellow_taxi_trips t,
+	zones zpu,
+	zones zdo
+where
+	t."PULocationID" = zpu."LocationID" and
+	t."DOLocationID" = zdo."LocationID"
+limit 100;
